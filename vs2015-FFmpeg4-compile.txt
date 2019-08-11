@@ -1,0 +1,181 @@
+编译 ffmpeg  4
+
+安裝 mingw-get 的默认
+
+
+1. 下载pkg-config-0.23-2.zip及glib_2.18.4-1_win32.zip
+http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/pkg-config_0.23-3_win32.zip
+http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.18/glib_2.18.4-1_win32.zip
+
+把glib_2.18.4-1_win32.zip中的libglib-2.0-0.dll与pkg-config.exe放在同一目录，或者放在$path目录下.
+
+实际 只用下载第一项。 放到msys中即可
+
+
+vs2015 编译。
+
+vs2015 启动 x64 的话，  运行  msys环境。
+
+******Note**********   mingw 的 msys\1.0\bin\link.exe  ===>  link_mingw.exe 防止与vc的编译工具冲突
+
+
+匹配 vc 的 x64 目录 与 启动环境
+
+以下在cmd设置 
+set INCLUDE=D:\mingw\msys\1.0\local\include;%INCLUDE%
+set LIBPATH=D:\mingw\msys\1.0\local\lib;%LIBPATH%
+set LIB=D:\mingw\msys\1.0\local\lib;%LIB%
+
+
+
+启动 msys 环境。
+D:\mingw\msys\1.0\msys.bat
+
+
+2. 设置环境变量
+export pkg_config_default=/usr/bin/pkg-config.exe
+export pkg_config_path=/mingw/lib/pkgconfig:/usr/local/lib/pkgconfig
+对于FFmpeg 一定是小写
+
+
+使用vs2015编译， 
+x264 (不严格依赖pkg-config， 只要windows cmd 设置 INCLUDE　LIB 目录包含 x264即可。 )， 
+zlib（不严格依赖pkg-config，  Note： 不能使用 debug， 因为debug 编译为 zlibd.lib,  configure 脚本找不到）
+sdl  (依赖pkg-config实现。 由于Windows c-make 不生成 sdl.pc文件。 需要自己生成。 )
+
+复制到 msys\local目录之下。 ffmpeg configure 需要找到。
+
+
+
+x.264 最新版本 config 脚本不支持 vc 编译
+
+
+另外一种方式  实现zlib 发现
+在Windows cmd 下，  将 zlib  放入 环境ENV （ windows )
+INCLUDE   D:\codetest\ffmpeg-3.3.7\zlibInstall\include
+LIB       D:\codetest\ffmpeg-3.3.7\zlibInstall\lib
+
+====补充说明: zlib  使用make install 则能够检测到.
+
+echo $INCLUDE 
+
+
+
+    以下 这一步 -- **没必要**。
+			VS2015-x86
+			export PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/BIN/":/d/mingw/:$PATH
+
+			VS2015-x64
+			export PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/BIN/amd64/":/d/mingw:$PATH
+
+
+进入ffmepg源代码目录
+cd /D/DocsBase/ffmpeg/ffmpeg4-vs2015-compile/ffmpeg-4.1
+cd /D/DocsBase/ffmpeg/ffmpeg4-vs2015-compile/ffmpeg-4.1
+cd /D/codetest/ffmpeg-3.3.7/ffmpeg-4.0.2
+
+
+./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay
+-- Note: 对于SDL2 虽然版本是2.  但是命令行是 sdl, 脚本内部进行了转换。
+
+
+
+---2019-08-11 增加调试支持 禁止strip.
+./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static  --enable-debug --disable-stripping    --disable-optimizations  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay --enable-libmfx  --enable-encoder=h264_qsv --enable-decoder=h264_qsv 
+
+
+./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static
+
+
+./configure --enable-asm --enable-yasm --arch=i386 --disable-ffserver --disable-avdevice --disable-swscale --disable-doc --disable-ffplay --disable-ffprobe --disable-ffmpeg --enable-shared --disable-static --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --prefix=/c/ffmpeg --toolchain=msvc
+
+
+
+
+
+若果configure使用了zlib 会导致 在 msys/VC2015 cl  编译不通过。
+d:\codetest\ffmpeg-3.3.7\zlibinstall\include\zconf.h(477): fatal error C1083: 无法打开包括文件: “unistd.h”: No such file or directory
+
+// 在 Linux 系统 下， 没有问题。  但是window时 由于ffmpeg使用 HAVE_UNISTD_H
+ffmpeg 形式  config.h
+#define HAVE_UNISTD_H 0
+
+
+zlib 的 zconf.h
+<===========================================================================
+#ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
+#  define Z_HAVE_UNISTD_H
+#endif
+
+===========================================================================>
+#if HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
+#  define Z_HAVE_UNISTD_H
+#endif
+
+
+
+纠正的错误：
+fftools 子目录 之下： 
+
+fftools/cmdutils.c(1149): error C2065: “slib”: 未声明的标识符
+
+  ffprobe.c
+  cmdutils.c
+  之中使用了 CC_IDENT  将此注释 即可。
+
+
+
+
+直接 没有任何支持的编译 encoders只有 mpeg2video
+
+
+
+ffmpeg -r 24 -f gdigrab -i desktop -c:v h264_qsv -b 3000k -r 24 -f mp4 D:/Tempfiles/out_h264_qsv.mp4
+
+
+
+
+====================================================================================================
+https://blog.csdn.net/fly_520/article/details/80625844
+
+
+cd x264
+
+??? 
+
+./configure --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
+
+./configure --host=x86_64-w64-mingw32--enable-shared
+
+#32-bits
+ 
+./configure --host=i686-w64-mingw32 --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
+
+#64bits
+./configure --host=x86_64-w64-mingw32 --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
+
+============================================= x264 测试程序 =======================================
+#include <stdio.h>
+#include <stdint.h>
+#include "x264.h"
+#include "x264_config.h"
+
+int main(void)
+{
+	x264_param_t mParam;
+	x264_param_default(&mParam);
+	//std::cout << "hello world" << std::endl;
+	//system("pause");
+	return 0;
+}
+============================================= x264 测试程序 =======================================
+
+
+https://blog.csdn.net/FRD2009041510/article/details/50805395
+x264代码剖析（二）：
+如何编译运行x264以及x264代码基本框架
+
+x264工程在x265出现之前一直在更新，但是自x264-20091007（含）不再支持VC++平台，
+也就是说支持VC++平台的x264的最新版本是x264-20091006。
+
+ 

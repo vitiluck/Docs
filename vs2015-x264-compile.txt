@@ -1,0 +1,90 @@
+编译 ffmpeg  4
+
+安裝 mingw-get 的默认
+
+
+vs2015 编译。
+
+vs2015 启动 x64 的话，  运行  msys环境。
+
+******Note**********   mingw 的 msys\1.0\bin\link.exe  ===>  link_mingw.exe 防止与vc的编译工具冲突
+
+
+匹配 vc 的 x64 目录 与 启动环境。
+
+D:\mingw\msys\1.0\msys.bat
+
+
+一下 这一步 可能 没必要。 
+-------------------------------------------------------------------------------------------------》
+VS2015-x86
+export PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/BIN/":/d/mingw/:$PATH
+
+VS2015-x64
+export PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/BIN/amd64/":/d/mingw:$PATH
+-------------------------------------------------------------------------------------------------《
+
+
+配置编译选项
+
+./configure --enable-shared --disable-opencl --extra-ldflags=-Wl,--output-def=libx264.def
+
+---------------Note: ldflag 中的 Wl 是 字母(L)l, 不是1. ------------------------------------------------
+这里有个疑问： 没有设置toolchain， 究竟是
+
+
+
+./configure --host=x86_64-w64-mingw32--enable-shared
+
+
+
+#32-bits
+
+./configure --host=i686-w64-mingw32 --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
+
+#64bits
+./configure --host=x86_64-w64-mingw32 --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
+------ 这个已经验证是错误的, 所以不知道是否是 VC 还是 gcc 编译的
+
+
+
+#include <iostream>
+ 
+
+extern "C"
+
+{
+
+#include "x264.h"
+
+#include "x264_config.h"
+
+}
+
+ 
+
+int main(void)
+
+{
+
+	x264_param_t mParam;
+
+	x264_param_default(&mParam);
+
+	std::cout << "hello world" << std::endl;
+
+	system("pause");
+
+	return 0;
+
+}
+
+https://blog.csdn.net/FRD2009041510/article/details/50805395
+x264代码剖析（二）：
+如何编译运行x264以及x264代码基本框架
+
+?
+
+? ? ? ? x264工程在x265出现之前一直在更新，但是自x264-20091007（含）不再支持VC++平台，
+也就是说支持VC++平台的x264的最新版本是x264-20091006。
+接下来就以该版本为例简单介绍如何编译运行x264以及x264代码的基本框架。
