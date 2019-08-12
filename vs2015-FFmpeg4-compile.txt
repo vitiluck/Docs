@@ -1,4 +1,11 @@
+2019-08-12   Sony  Asus version corporated.
+--------------------------------------------------------------------------------------
 编译 ffmpeg  4
+--------------------------------------------------------------------------------------
+
+Asus --  [32]  x264 zlib sdl  VC Compiled.       Support libmfx.
+Sony -- [64]  Mingw env compiled and installed.  
+
 
 安裝 mingw-get 的默认
 
@@ -8,29 +15,37 @@ http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/pkg-config_0.23-3_win
 http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.18/glib_2.18.4-1_win32.zip
 
 把glib_2.18.4-1_win32.zip中的libglib-2.0-0.dll与pkg-config.exe放在同一目录，或者放在$path目录下.
-
 实际 只用下载第一项。 放到msys中即可
-
-
-vs2015 编译。
-
-vs2015 启动 x64 的话，  运行  msys环境。
 
 ******Note**********   mingw 的 msys\1.0\bin\link.exe  ===>  link_mingw.exe 防止与vc的编译工具冲突
 
 
-匹配 vc 的 x64 目录 与 启动环境
+vs2015 编译。
+1.    vs2015 启动 x64 的话，  运行  msys环境。
 
-以下在cmd设置 
+
+2.    设置 环境变量
+
+=========================HOME============================================
 set INCLUDE=D:\mingw\msys\1.0\local\include;%INCLUDE%
 set LIBPATH=D:\mingw\msys\1.0\local\lib;%LIBPATH%
 set LIB=D:\mingw\msys\1.0\local\lib;%LIB%
 
-
-
 启动 msys 环境。
 D:\mingw\msys\1.0\msys.bat
 
+
+============================ ASUS ==========================================
+Asus---cmd设置 
+set INCLUDE=D:\CodeTest\ffmpeg\install\include;C:\mingw\msys\1.0\local\include;%INCLUDE%
+set LIBPATH=D:\CodeTest\ffmpeg\install\lib;C:\mingw\msys\1.0\local\lib;%LIBPATH%
+set LIB=D:\CodeTest\ffmpeg\install\lib;C:\mingw\msys\1.0\local\lib;%LIB%
+
+启动 msys 环境。
+C:\mingw\msys\1.0\msys.bat
+
+
+-----------------------------------------------Run Mingw shell -----------------------------------------------------------
 
 2. 设置环境变量
 export pkg_config_default=/usr/bin/pkg-config.exe
@@ -38,16 +53,18 @@ export pkg_config_path=/mingw/lib/pkgconfig:/usr/local/lib/pkgconfig
 对于FFmpeg 一定是小写
 
 
-使用vs2015编译， 
+x264 需要安装 vsnasm.  需要超级用户vc 命令行 install_script.bat (针对shiftmedia)
+
 x264 (不严格依赖pkg-config， 只要windows cmd 设置 INCLUDE　LIB 目录包含 x264即可。 )， 
 zlib（不严格依赖pkg-config，  Note： 不能使用 debug， 因为debug 编译为 zlibd.lib,  configure 脚本找不到）
-sdl  (依赖pkg-config实现。 由于Windows c-make 不生成 sdl.pc文件。 需要自己生成。 )
+sdl  (依赖pkg-config实现。 由于Windows c-make 不生成 sdl.pc文件。 必须自己生成。 )
+       sdl2 检测命令:  pkg-config --exists --print-errors  "sdl2 >= 2.0.1 sdl2 < 2.1.0"   编译时为 sdl2 :  2.0.9 
 
 复制到 msys\local目录之下。 ffmpeg configure 需要找到。
 
 
 
-x.264 最新版本 config 脚本不支持 vc 编译
+x.264 编译最新版本 config 脚本不支持 vc 编译
 
 
 另外一种方式  实现zlib 发现
@@ -74,7 +91,37 @@ cd /D/DocsBase/ffmpeg/ffmpeg4-vs2015-compile/ffmpeg-4.1
 cd /D/DocsBase/ffmpeg/ffmpeg4-vs2015-compile/ffmpeg-4.1
 cd /D/codetest/ffmpeg-3.3.7/ffmpeg-4.0.2
 
+cd /D/CodeTest/ffmpeg/ffmpeg-4.1.3
 
+
+执行 Configure.     configure 错误 --- 查看    ffbuild/configure.log
+
+依赖库libmfx 需要编写 libmfx.pc 文件  (x264不同,必须是 libmfx), 同时 -l 要有 advapi32.  *********** include/libdir 一定要使用 windows 命名规范 ****************************
+--------------libmfx.pc---------------------
+----------------------data----------------------------
+prefix=/d/SDKs/msdk/v2018r2/sdk
+exec_prefix=/d/SDKs/msdk/v2018r2/sdk
+libdir=D:/SDKs/msdk/v2018r2/sdk/lib/win32
+sharedlibdir=D:/SDKs/msdk/v2018r2/sdk/lib/win32
+includedir=D:/SDKs/msdk/v2018r2/sdk/include
+
+Name: libmfx
+Description: Intel MFX-QSV library
+Version: 1.38.1
+
+Requires:
+Libs: -L${libdir}  -llibmfx -ladvapi32
+Cflags: -I${includedir}
+---------------------  data end -------------------------
+测试脚本 使用的命令:
+./compat/windows/mslink -nologo -LARGEADDRESSAWARE -ID:/SDKs/msdk/v2018r2/sdk/include -libpath:D:/SDKs/msdk/v2018r2/sdk/lib/win32 -out:./ffconf.qNLCtULI/test.exe ./ffconf.qNLCtULI/test.o libmfx.lib advapi32.lib
+
+
+
+
+
+================x86  64-bit version  begin   ...   ....     ================================
+---------------------------------------------------------------------------------
 ./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay
 -- Note: 对于SDL2 虽然版本是2.  但是命令行是 sdl, 脚本内部进行了转换。
 
@@ -86,8 +133,26 @@ cd /D/codetest/ffmpeg-3.3.7/ffmpeg-4.0.2
 
 ./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static
 
+---------------------------------------------------------------------------------
+================x86  64-bit version  ================================
+
+
+
+
+
+================x86  32-bit version  begin...................================================
+---------------------------------------------------------------------------------
+./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-debug --disable-stripping    --disable-optimizations  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay --enable-libmfx  --enable-encoder=h264_qsv --enable-decoder=h264_qsv 
+
+
+./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay
 
 ./configure --enable-asm --enable-yasm --arch=i386 --disable-ffserver --disable-avdevice --disable-swscale --disable-doc --disable-ffplay --disable-ffprobe --disable-ffmpeg --enable-shared --disable-static --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --prefix=/c/ffmpeg --toolchain=msvc
+
+---------------------------------------------------------------------------------
+================x86  32-bit version  end ================================
+
+
 
 
 
@@ -130,7 +195,6 @@ fftools/cmdutils.c(1149): error C2065: “slib”: 未声明的标识符
 
 
 
-ffmpeg -r 24 -f gdigrab -i desktop -c:v h264_qsv -b 3000k -r 24 -f mp4 D:/Tempfiles/out_h264_qsv.mp4
 
 
 
@@ -140,16 +204,12 @@ https://blog.csdn.net/fly_520/article/details/80625844
 
 
 cd x264
-
-??? 
-
 ./configure --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
 
 ./configure --host=x86_64-w64-mingw32--enable-shared
 
 #32-bits
- 
-./configure --host=i686-w64-mingw32 --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
+ ./configure --host=i686-w64-mingw32 --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
 
 #64bits
 ./configure --host=x86_64-w64-mingw32 --enable-shared --extra-ldflags=-Wl,--output-def=libx264.def
@@ -179,3 +239,7 @@ x264工程在x265出现之前一直在更新，但是自x264-20091007（含）不再支持VC++平台，
 也就是说支持VC++平台的x264的最新版本是x264-20091006。
 
  
+
+
+ffmpeg -r 24 -f gdigrab -i desktop -c:v h264_qsv -b 3000k -r 24 -f mp4 D:/Tempfiles/out_h264_qsv.mp4
+-f dshow -s 1280*720 -i video="USB2.0 HD UVC WebCam"  -vcodec h264_qsv d:/a.mp4 
