@@ -1,1 +1,0 @@
--f dshow   -s 128*720 -i video="Front Camera"  -vcodec h264_qsv d:/a.mp4

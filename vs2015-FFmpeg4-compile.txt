@@ -250,3 +250,4 @@ x264工程在x265出现之前一直在更新，但是自x264-20091007（含）不再支持VC++平台，
 
 ffmpeg -r 24 -f gdigrab -i desktop -c:v h264_qsv -b 3000k -r 24 -f mp4 D:/Tempfiles/out_h264_qsv.mp4
 -f dshow -s 1280*720 -i video="USB2.0 HD UVC WebCam"  -vcodec h264_qsv d:/a.mp4 
+-f dshow   -s 128*720 -i video="Front Camera"  -vcodec h264_qsv d:/a.mp4
