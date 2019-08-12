@@ -22,14 +22,14 @@ vs2015 启动 x64 的话，  运行  msys环境。
 匹配 vc 的 x64 目录 与 启动环境
 
 以下在cmd设置 
-set INCLUDE=D:\mingw\msys\1.0\local\include;%INCLUDE%
-set LIBPATH=D:\mingw\msys\1.0\local\lib;%LIBPATH%
-set LIB=D:\mingw\msys\1.0\local\lib;%LIB%
+set INCLUDE=D:\CodeTest\ffmpeg\install\include;C:\mingw\msys\1.0\local\include;%INCLUDE%
+set LIBPATH=D:\CodeTest\ffmpeg\install\lib;C:\mingw\msys\1.0\local\lib;%LIBPATH%
+set LIB=D:\CodeTest\ffmpeg\install\lib;C:\mingw\msys\1.0\local\lib;%LIB%
 
 
 
 启动 msys 环境。
-D:\mingw\msys\1.0\msys.bat
+C:\mingw\msys\1.0\msys.bat
 
 
 2. 设置环境变量
@@ -39,9 +39,13 @@ export pkg_config_path=/mingw/lib/pkgconfig:/usr/local/lib/pkgconfig
 
 
 使用vs2015编译， 
+
+x264 需要安装 vsnasm.  需要超级用户vc 命令行 install_script.bat (针对shiftmedia)
+
 x264 (不严格依赖pkg-config， 只要windows cmd 设置 INCLUDE　LIB 目录包含 x264即可。 )， 
 zlib（不严格依赖pkg-config，  Note： 不能使用 debug， 因为debug 编译为 zlibd.lib,  configure 脚本找不到）
-sdl  (依赖pkg-config实现。 由于Windows c-make 不生成 sdl.pc文件。 需要自己生成。 )
+sdl  (依赖pkg-config实现。 由于Windows c-make 不生成 sdl.pc文件。 必须自己生成。 )
+       sdl2 检测命令:  pkg-config --exists --print-errors  "sdl2 >= 2.0.1 sdl2 < 2.1.0"   编译时为 sdl2 :  2.0.9 
 
 复制到 msys\local目录之下。 ffmpeg configure 需要找到。
 
@@ -55,7 +59,6 @@ x.264 最新版本 config 脚本不支持 vc 编译
 INCLUDE   D:\codetest\ffmpeg-3.3.7\zlibInstall\include
 LIB       D:\codetest\ffmpeg-3.3.7\zlibInstall\lib
 
-====补充说明: zlib  使用make install 则能够检测到.
 
 echo $INCLUDE 
 
@@ -80,8 +83,13 @@ cd /D/codetest/ffmpeg-3.3.7/ffmpeg-4.0.2
 
 
 
----2019-08-11 增加调试支持 禁止strip.
-./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static  --enable-debug --disable-stripping    --disable-optimizations  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay --enable-libmfx  --enable-encoder=h264_qsv --enable-decoder=h264_qsv 
+-----尝试 win32  x86  32-bit version
+./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay
+
+
+查询configure 错误,   主要  ffbuild/configure.log
+
+
 
 
 ./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static
