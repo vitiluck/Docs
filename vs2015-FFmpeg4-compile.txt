@@ -115,9 +115,28 @@ Requires:
 Libs: -L${libdir}  -llibmfx -ladvapi32
 Cflags: -I${includedir}
 ---------------------  data end -------------------------
+
 测试脚本 使用的命令:
 ./compat/windows/mslink -nologo -LARGEADDRESSAWARE -ID:/SDKs/msdk/v2018r2/sdk/include -libpath:D:/SDKs/msdk/v2018r2/sdk/lib/win32 -out:./ffconf.qNLCtULI/test.exe ./ffconf.qNLCtULI/test.o libmfx.lib advapi32.lib
 
+//2019-08-23  Add  libass support.  采用 shiftmedia 的 deps 编译.
+	Note: include 不要带子目录ass 因为已经添加了.	所有的lib一定要dll编译. 否则脚本缺少其他的输入函数.	--find ass/ass.h ass_library_init
+			
+pkg-config --cflags --libs libass
+
+prefix=/d/CodeTest/ffmpeg/msvc
+exec_prefix=/d/CodeTest/ffmpeg/msvc
+libdir=D:/CodeTest/ffmpeg/msvc/lib/x86
+sharedlibdir=D:/CodeTest/ffmpeg/msvc/lib/x86
+includedir=D:/CodeTest/ffmpeg/msvc/include
+
+Name: libass
+Description: Subtitle library
+Version: 1.38.1
+
+Requires:
+Libs: -L${libdir}  -llibassd 
+Cflags: -I${includedir}
 
 
 
@@ -128,14 +147,7 @@ Cflags: -I${includedir}
 -- Note: 对于SDL2 虽然版本是2.  但是命令行是 sdl, 脚本内部进行了转换。
 
 
-
------尝试 win32  x86  32-bit version
-./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay
-
-
 查询configure 错误,   主要  ffbuild/configure.log
-
-
 
 
 ./configure --target-os=win64 --arch=x86_64 --toolchain=msvc --enable-shared --disable-static
@@ -149,13 +161,18 @@ Cflags: -I${includedir}
 
 ================x86  32-bit version  begin...................================================
 ---------------------------------------------------------------------------------
-./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-debug --disable-stripping    --disable-optimizations  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay --enable-libmfx  --enable-encoder=h264_qsv --enable-decoder=h264_qsv 
+//2019-08-23  Add  libass support.  采用 shiftmedia 的 deps 编译.
+
+./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-debug --disable-stripping    --disable-optimizations  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay --enable-libmfx  --enable-encoder=h264_qsv --enable-decoder=h264_qsv  --enable-libass && make && make install
 
 
 ./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay
 
 ./configure --enable-asm --enable-yasm --arch=i386 --disable-ffserver --disable-avdevice --disable-swscale --disable-doc --disable-ffplay --disable-ffprobe --disable-ffmpeg --enable-shared --disable-static --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --prefix=/c/ffmpeg --toolchain=msvc
 
+
+-----simple
+./configure --target-os=win32 --arch=x86 --toolchain=msvc --enable-shared --disable-static  --enable-gpl --enable-libx264 --enable-zlib --enable-sdl --enable-ffplay
 ---------------------------------------------------------------------------------
 ================x86  32-bit version  end ================================
 
